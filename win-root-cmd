@@ -1,0 +1,34 @@
+#!/bin/bash
+
+PATH="/bin:/sbin:/usr/local/sbin:/usr/local/bin:/usr/bin"
+X=0
+
+echo Searching for Windows partition ...
+mkdir -p /mnt
+
+for i in $(ls /dev/sd*); do
+	mount $i /mnt >/dev/null 2>/dev/null
+	if test -d /mnt/Windows/System32; then
+		X=1
+		echo Found Windows on $i
+		if test -f /mnt/Windows/System32/sethc.exe.orig; then 
+				mv /mnt/Windows/System32/sethc.exe.orig /mnt/Windows/System32/sethc.exe
+				echo Have fun with your new password
+				read
+		else
+				mv /mnt/Windows/System32/sethc.exe /mnt/Windows/System32/sethc.exe.orig
+				cp /mnt/Windows/System32/cmd.exe /mnt/Windows/System32/sethc.exe
+				echo Boot into Windows
+				echo Hit 5x SHIFT
+				echo Enter \"control userpasswords2\" into the cmd
+				echo Reset your password and boot this USB drive again
+				read
+		fi
+	fi
+	umount /mnt >/dev/null 2>/dev/null
+done
+
+if [[ $X == 0 ]]; then
+	echo Your ntfs partition was improperly unmounted
+	echo Boot into Windows and reboot
+fi
